@@ -37,29 +37,66 @@ playlist_f = (
 
 import random
 from datetime import timedelta
+from typing import Iterable, Any, Union
 
 
-def get_duration(playlist, n):
-    def get_duration_from_string(s):
-        name, duration_str = s.strip().split('\t')
-        duration = timedelta(seconds=int(duration_str.split('.')[0]))
-        return name, duration
+def parse_playlist(playlist: str) -> list:
+    """Парсит многострочную строку в список песен."""
+    songs = []
+    for line in playlist.strip().split("\n"):
+        name, duration = line.rsplit(" ", 1)
+        songs.append((name, float(duration)))
+    return songs
 
-    def get_duration_from_tuples(tuples):
-        total_duration = timedelta()
-        for song, duration in tuples:
-            total_duration += duration
-        return total_duration
+
+def get_duration(playlist: Iterable, n: int) -> Union[timedelta, str, float]:
+    """Возвращает общее время звучания n случайных песен из плейлиста."""
 
     if isinstance(playlist, str):
-        playlist = [get_duration_from_string(line) for line in playlist.split('\n')]
-    elif isinstance(playlist, (list, tuple)):
-        return get_duration_from_tuples(playlist)
-    else:
-        raise ValueError("Invalid playlist format")
+        playlist = parse_playlist(playlist)
+    elif isinstance(playlist, tuple) and all(isinstance(i, dict) for i in playlist):
+        playlist = [(song['title'], song['duration']) for song in playlist]
 
-    selected_songs = random.sample(playlist, n)
-    total_duration = timedelta()
-    for song, duration in selected_songs:
-        total_duration += duration
-    return total_duration
+    # Выбор случайных песен
+    if n > len(playlist):
+        return "Запрашиваемое количество песен больше, чем в плейлисте."
+
+    chosen_songs = random.sample(playlist, n)
+
+    # Считаем общее время звучания
+    total_duration = sum(song[1] for song in chosen_songs)
+
+    # Возвращаем как объект timedelta
+    return timedelta(hours=int(total_duration // 60), minutes=int(total_duration % 60))
+
+
+# Пример использования:
+# Многострочная строка
+multi_line_playlist = """
+Why Does My Heart Feel so Bad? 4.23
+Everlong 3.25
+To Let Myself Go 4.40
+Golden 2.56
+Daisuke 2.41
+Miami 3.31
+Chill Bill Lofi 2.05
+The Perfect Girl 1.48
+Resonance 3.32
+"""
+
+# Кортеж из словарей
+dict_playlist = (
+    {"title": "Why Does My Heart Feel so Bad?", "duration": 4.23},
+    {"title": "Everlong", "duration": 3.25},
+    {"title": "To Let Myself Go", "duration": 4.40},
+    {"title": "Golden", "duration": 2.56},
+    {"title": "Daisuke", "duration": 2.41},
+    {"title": "Miami", "duration": 3.31},
+    {"title": "Chill Bill Lofi", "duration": 2.05},
+    {"title": "The Perfect Girl", "duration": 1.48},
+    {"title": "Resonance", "duration": 3.32},
+)
+
+# Вызываем функцию
+print(get_duration(multi_line_playlist, 3))
+print(get_duration(dict_playlist, 3))
