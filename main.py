@@ -1,3 +1,4 @@
+## project_5
 # Представим, что некое приложение хранит плейлист песен в двух видах:
 #   * многострочная строка
 #   * кортеж из двух словарей
@@ -29,10 +30,9 @@ The Perfect Girl 1.48
 Resonance 3.32
 """
 
-
 playlist_f = (
-	{"Free Bird": 9.08, "Enter Sandman": 5.31, "One" : 7.45, "Sliver" : 2.10, "Come as You Are": 3.45},
-	{"Thunderstruck": 4.53, "You Shook Me All Night Long": 3.29, "Everlong" : 4.51, "My Hero" : 4.02},
+    {"Free Bird": 9.08, "Enter Sandman": 5.31, "One": 7.45, "Sliver": 2.10, "Come as You Are": 3.45},
+    {"Thunderstruck": 4.53, "You Shook Me All Night Long": 3.29, "Everlong": 4.51, "My Hero": 4.02},
 )
 
 import random
@@ -41,7 +41,6 @@ from typing import Iterable, Any, Union
 
 
 def parse_playlist(playlist: str) -> list:
-    """Парсит многострочную строку в список песен."""
     songs = []
     for line in playlist.strip().split("\n"):
         name, duration = line.rsplit(" ", 1)
@@ -50,28 +49,21 @@ def parse_playlist(playlist: str) -> list:
 
 
 def get_duration(playlist: Iterable, n: int) -> Union[timedelta, str, float]:
-    """Возвращает общее время звучания n случайных песен из плейлиста."""
-
     if isinstance(playlist, str):
         playlist = parse_playlist(playlist)
     elif isinstance(playlist, tuple) and all(isinstance(i, dict) for i in playlist):
         playlist = [(song['title'], song['duration']) for song in playlist]
 
-    # Выбор случайных песен
     if n > len(playlist):
-        return "Запрашиваемое количество песен больше, чем в плейлисте."
+        return
 
     chosen_songs = random.sample(playlist, n)
 
-    # Считаем общее время звучания
     total_duration = sum(song[1] for song in chosen_songs)
 
-    # Возвращаем как объект timedelta
     return timedelta(hours=int(total_duration // 60), minutes=int(total_duration % 60))
 
 
-# Пример использования:
-# Многострочная строка
 multi_line_playlist = """
 Why Does My Heart Feel so Bad? 4.23
 Everlong 3.25
@@ -84,7 +76,6 @@ The Perfect Girl 1.48
 Resonance 3.32
 """
 
-# Кортеж из словарей
 dict_playlist = (
     {"title": "Why Does My Heart Feel so Bad?", "duration": 4.23},
     {"title": "Everlong", "duration": 3.25},
@@ -97,6 +88,5 @@ dict_playlist = (
     {"title": "Resonance", "duration": 3.32},
 )
 
-# Вызываем функцию
 print(get_duration(multi_line_playlist, 3))
 print(get_duration(dict_playlist, 3))
